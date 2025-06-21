@@ -3,20 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic 8 Ball</title>
 
-    <!-- PWA Manifest Link -->
-    <link rel="manifest" href="manifest.json">
-
-    <!-- Theme color for the browser address bar -->
-    <meta name="theme-color" content="#111827">
-
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for a nice, clean font -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+
     <style>
         /* Sets the default font for the page */
         body {
@@ -35,42 +28,54 @@
             animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
         }
 
-        /* Custom style for the glossy reflection on the 8-ball */
+        /* --- 3D Enhancement Styles --- */
+        #eight-ball {
+            background: radial-gradient(circle at 50% 30%, #3a3a3a, #000 85%);
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.6), /* Outer shadow for lift */
+                        inset 0 -15px 25px rgba(0, 0, 0, 0.7),   /* Inner bottom shadow for depth */
+                        inset 0 10px 15px rgba(255, 255, 255, 0.1); /* Subtle inner top highlight */
+        }
+        
         #eight-ball::before {
             content: '';
             position: absolute;
-            top: 10%;
-            left: 15%;
-            width: 70%;
-            height: 70%;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%);
+            top: 7%;
+            left: 20%;
+            width: 60%;
+            height: 40%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 70%);
             border-radius: 50%;
-            transform: rotate(-45deg);
+            transform: rotate(-30deg);
             z-index: 10;
-            pointer-events: none; /* Allows clicks to pass through the reflection */
+            pointer-events: none; /* Allows clicks to pass through */
+        }
+
+        #inner-window {
+            box-shadow: inset 0 6px 15px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Style for the "blue liquid" effect when a response is shown */
+        #inner-window.response-visible {
+            background: radial-gradient(circle at 50% 70%, #0c1a3e, #030617 80%);
+            box-shadow: inset 0 -8px 15px rgba(0, 0, 0, 0.8);
         }
     </style>
 </head>
+
 <body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
 
-    <!-- Main container for the Magic 8 Ball application -->
     <div class="w-full max-w-md text-center">
         <h1 class="text-4xl md:text-5xl font-bold mb-4 text-cyan-400">Magic 8-Ball</h1>
         <p class="text-gray-400 mb-8">Ask a yes/no question, then click the 8-Ball!</p>
 
-        <!-- The Magic 8 Ball visual element, which is clickable -->
-        <div id="eight-ball" class="relative w-64 h-64 md:w-80 md:h-80 mx-auto bg-black rounded-full flex items-center justify-center border-4 border-gray-800 shadow-2xl mb-8 cursor-pointer transform hover:scale-105 transition-transform duration-300">
-            <!-- This is the window that shows the '8' or the response -->
-            <div id="inner-window" class="relative w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center shadow-inner transition-colors duration-300">
-                <!-- The '8' logo, visible initially -->
+        <div id="eight-ball" class="relative w-64 h-64 md:w-80 md:h-80 mx-auto rounded-full flex items-center justify-center border-4 border-gray-800 mb-8 cursor-pointer transform hover:scale-105 transition-transform duration-300">
+            <div id="inner-window" class="relative w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center transition-all duration-300">
                 <p id="eight-logo" class="text-7xl md:text-8xl font-black text-black transition-opacity duration-300">8</p>
-                <!-- The response text, hidden initially -->
                 <p id="response-text" class="absolute inset-0 flex items-center justify-center text-center text-lg font-bold text-cyan-300 transition-opacity duration-300 opacity-0 p-4"></p>
             </div>
         </div>
     </div>
 
-    <!-- Original App Logic -->
     <script>
         const eightBallElement = document.getElementById('eight-ball');
         const innerWindowElement = document.getElementById('inner-window');
@@ -78,50 +83,42 @@
         const responseTextElement = document.getElementById('response-text');
         let isShaking = false;
         const responses = [ "Definitely probably", "Pssshhhht!", "How about NO?", "Wouldn't you like to know!", "Trust me, you don't want to know.", "Don't know. Don't care.", "Meh.", "Play stupid games, win stupid prizes.", "New Ball. Who this?", "Harder Daddy", "Ever heard of Google?", "Better not tell you now.", "If you're reading this you're gay.", "We have been trying to reach you regarding your car's extended warranty.", "For best result, put me in your ass.", "SIIIIIT!", "My sources say no.", "Outlook not so good.", "Very doubtful." ];
+        
         function resetBall() {
             responseTextElement.classList.add('opacity-0');
             setTimeout(() => {
-                innerWindowElement.classList.remove('bg-gray-900');
-                innerWindowElement.classList.add('bg-white');
+                innerWindowElement.classList.remove('response-visible');
+                innerWindowElement.classList.add('bg-white'); 
                 eightLogoElement.classList.remove('opacity-0');
                 isShaking = false;
             }, 300);
         }
+
         function generateResponse() {
             if (isShaking) return;
             isShaking = true;
             eightLogoElement.classList.add('opacity-0');
             eightBallElement.classList.add('shake');
+
             setTimeout(() => {
                 innerWindowElement.classList.remove('bg-white');
-                innerWindowElement.classList.add('bg-gray-900');
+                innerWindowElement.classList.add('response-visible');
             }, 200);
+
             setTimeout(() => {
                 const randomIndex = Math.floor(Math.random() * responses.length);
                 responseTextElement.textContent = responses[randomIndex];
                 responseTextElement.classList.remove('opacity-0');
             }, 500);
+
             setTimeout(() => {
                 eightBallElement.classList.remove('shake');
             }, 820);
+
             setTimeout(resetBall, 3500);
         }
-        eightBallElement.addEventListener('click', generateResponse);
-    </script>
 
-    <!-- PWA Service Worker Registration Script -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('Service Worker registered successfully:', registration);
-                    })
-                    .catch(error => {
-                        console.log('Service Worker registration failed:', error);
-                    });
-            });
-        }
+        eightBallElement.addEventListener('click', generateResponse);
     </script>
 </body>
 </html>
